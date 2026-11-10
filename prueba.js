@@ -69,6 +69,14 @@ const esperar = (s, evento) => new Promise((resolve) => s.once(evento, resolve))
 
   const escala = await pedir(b, 'escala:cambiar', { tonica: 'D', modo: 'dorico' });
   revisar(escala.ok && escala.escala.tonica === 'D', 'B cambia la escala a D dórico');
+  // reloj compartido: el pulso sigue en fase al cambiar el tempo
+  const h1 = await pedir(a, 'reloj:hora');
+  const pulsos = (r, ms) => r.pulsos0 + (ms - r.t0) / 60000 * r.bpm;
+  const antesCambio = pulsos(h1.reloj, h1.t);
+  const cambio = await pedir(a, 'tempo:cambiar', { tempo: 150 });
+  const h2 = await pedir(a, 'reloj:hora');
+  revisar(h1.ok && Number.isFinite(h1.t) && h2.reloj.bpm === 150 && cambio.ok, 'reloj: hora del servidor y ancla con el tempo nuevo');
+  revisar(Math.abs(pulsos(h2.reloj, h2.reloj.t0) - pulsos(h1.reloj, h2.reloj.t0)) < 1e-9 && pulsos(h2.reloj, h2.t) >= antesCambio, 'reloj: al cambiar el tempo el pulso sigue sin saltos');
   const soloModo = await pedir(a, 'escala:cambiar', { modo: 'pentatonica_mayor' });
   revisar(soloModo.ok && soloModo.escala.tonica === 'D' && soloModo.escala.modo === 'pentatonica_mayor', 'cambiar solo el modo conserva la tonalidad');
   const soloTon = await pedir(a, 'escala:cambiar', { tonica: 'F#' });

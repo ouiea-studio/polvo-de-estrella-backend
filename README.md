@@ -36,9 +36,11 @@ Hay un ejemplo en `.env.example`.
 
 ## Eventos de Socket.IO
 
-Del cliente al servidor: `unirse`, `instrumento:agregar`, `instrumento:editar`, `instrumento:tocar`, `instrumento:mover` (con `final: true` al soltar), `instrumento:eliminar`, `tempo:cambiar`, `escala:cambiar` ({ tonica } y/o { modo }: jonico, dorico, frigio, lidio, mixolidio, eolico, locrio, pentatonica_mayor, pentatonica_menor), `ajustes:cambiar`, `obra:final` y `obra:reabrir`. Al desconectarse un tripulante, sus instrumentos se eliminan.
+Del cliente al servidor: `unirse`, `instrumento:agregar`, `instrumento:editar`, `instrumento:tocar`, `instrumento:mover` (con `final: true` al soltar), `instrumento:eliminar`, `tempo:cambiar`, `escala:cambiar` ({ tonica } y/o { modo }: jonico, dorico, frigio, lidio, mixolidio, eolico, locrio, pentatonica_mayor, pentatonica_menor), `ajustes:cambiar`, `obra:final`, `obra:reabrir` y `reloj:hora` (devuelve la hora del servidor y el ancla del pulso; no exige haberse unido). Al desconectarse un tripulante, sus instrumentos se eliminan.
 
 Del servidor a todos: `fisica` (posiciones, ~30 por segundo), `choque`, `instrumento:disolviendo`, `instrumento:revive`, `instrumento:eliminado` (con `motivo`), `ajustes:cambiados`, `obra:final`, `obra:cerrada` y `obra:reabierta`, además de los de siempre.
+
+El servidor también es la referencia del pulso (reloj compartido): guarda un ancla `{ t0, pulsos0, bpm }` que cambia con el tempo sin saltos; va en el estado y en `tempo:cambiado`, y cada navegador alinea su secuenciador a ella.
 
 El servidor es la autoridad sobre la física (las gemas chocan y se asientan) y sobre la vida de los módulos: si el dueño no interactúa con uno durante `inactividad` segundos (45 por defecto) se disuelve en `disolucion` segundos (2,5) y se elimina, salvo que su dueño lo toque antes; cada tripulante tiene como máximo 3 módulos vivos. El final de la obra disuelve todo y deja la estación cerrada hasta reabrirla (en el computador del director, el audio hace un "wash" de reverb y delay: ver el frontend).
 

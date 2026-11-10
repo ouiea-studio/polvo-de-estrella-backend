@@ -86,8 +86,16 @@ const POR_DEFECTO = {
 const RANGO_AJUSTES = { inactividad: [3, 600], disolucion: [1, 30], final: [5, 120] };
 const MAX_VIVOS = 3; // módulos vivos por dispositivo (tripulante)
 
+// RELOJ COMPARTIDO (10 nov): el servidor es la referencia del pulso. ancla = { t0, pulsos0, bpm }:
+// en el instante t0 (ms del reloj del servidor) el pulso iba en pulsos0 negras y desde ahí avanza a
+// bpm. Cada cliente mide su desfase con el servidor y alinea su secuenciador y sus LFO a este pulso.
+// Al cambiar el tempo se fija un ancla nueva en ese instante: el pulso sigue sin saltos (en fase).
+const ahoraMs = () => performance.timeOrigin + performance.now();
+const pulsosEn = (reloj, ms) => reloj.pulsos0 + (ms - reloj.t0) / 60000 * reloj.bpm;
+
 const estado = {
   tempo: 70, // al iniciar la estación: 70 BPM en Re dórico (10 nov)
+  reloj: { t0: ahoraMs(), pulsos0: 0, bpm: 70 },
   escala: { tonica: 'D', modo: 'dorico' },
   tripulantes: [],
   instrumentos: [],
@@ -509,6 +517,8 @@ function cambiarTempo(tempo) {
   const n = numero(tempo, 'tempo');
   if (n < TEMPO_MIN || n > TEMPO_MAX) throw new Error(`tempo debe estar entre ${TEMPO_MIN} y ${TEMPO_MAX} BPM`);
   estado.tempo = n;
+  const t = ahoraMs();
+  estado.reloj = { t0: t, pulsos0: pulsosEn(estado.reloj, t), bpm: n };
   return n;
 }
 
@@ -528,6 +538,7 @@ function cambiarEscala({ tonica, modo }) {
 }
 
 module.exports = {
+  ahoraMs,
   estado,
   instantanea,
   paso,

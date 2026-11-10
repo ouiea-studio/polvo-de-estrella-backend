@@ -52,6 +52,13 @@ io.on('connection', (socket) => {
     });
   }
 
+  // Reloj compartido: el cliente pregunta la hora varias veces y calcula su desfase (ida y vuelta).
+  // No exige haberse unido: la vista domo puede sincronizarse apenas conecta.
+  socket.on('reloj:hora', (datos, ack) => {
+    if (typeof datos === 'function') ack = datos;
+    responder(ack, { ok: true, t: sala.ahoraMs(), reloj: sala.estado.reloj });
+  });
+
   socket.on('unirse', (datos, ack) => {
     if (typeof datos === 'function') ack = datos;
     let tripulante = sala.buscarTripulante(socket.id);
@@ -106,7 +113,7 @@ io.on('connection', (socket) => {
 
   manejar('tempo:cambiar', (datos) => {
     const tempo = sala.cambiarTempo(datos.tempo);
-    io.emit('tempo:cambiado', { tempo, por: socket.id });
+    io.emit('tempo:cambiado', { tempo, por: socket.id, reloj: sala.estado.reloj });
     return { tempo };
   });
 
