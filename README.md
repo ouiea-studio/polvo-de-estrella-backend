@@ -1,10 +1,10 @@
 # Polvo de Estrella · backend
 
-Servidor de **Polvo de Estrella** (nombre técnico del proyecto: OnlineBandApp), una app web de creación musical colectiva en tiempo real pensada como instalación interactiva para el domo del Planetario de Bogotá: una sala global donde cada persona (tripulante), desde su celular o computador, agrega instrumentos representados como gemas 3D en un universo compartido.
+Servidor de **Polvo de Estrella** (la carpeta local del proyecto se llama OnlineBandApp), una app web de creación musical colectiva en tiempo real pensada como instalación interactiva para el domo del Planetario de Bogotá: una sala global donde cada persona (tripulante), desde su celular o computador, agrega instrumentos representados como gemas 3D en un universo compartido.
 
 Este servidor guarda en memoria el estado de la sala (tempo, escala, tripulantes e instrumentos; al encender: 70 BPM en Re dórico) y lo sincroniza entre los navegadores con Socket.IO. No transmite audio: cada navegador genera el sonido a partir del estado compartido. La obra es efímera; no hay base de datos.
 
-El frontend está en [onlineband-frontend](https://github.com/ouiea-studio/onlineband-frontend).
+El frontend está en [polvo-de-estrella-frontend](https://github.com/ouiea-studio/polvo-de-estrella-frontend). Publicado en https://polvo-de-estrella-backend.onrender.com (el frontend, en https://polvo-de-estrella.onrender.com).
 
 ## Correrlo en local
 
@@ -24,7 +24,7 @@ Con el servidor encendido, `npm test` conecta dos tripulantes de prueba y revisa
 | Variable | Para qué sirve | Por defecto |
 | --- | --- | --- |
 | `PORT` | Puerto en el que escucha. Render lo define solo. | `3000` |
-| `FRONTEND_URL` | URL del frontend publicado, para permitirlo en CORS (por ejemplo `https://onlineband.onrender.com`). `http://localhost:5173` siempre está permitido. | sin valor |
+| `FRONTEND_URL` | URL del frontend publicado, para permitirlo en CORS (por ejemplo `https://polvo-de-estrella.onrender.com`). `http://localhost:5173` siempre está permitido. | sin valor |
 
 Hay un ejemplo en `.env.example`.
 

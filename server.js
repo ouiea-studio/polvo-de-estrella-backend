@@ -1,4 +1,4 @@
-// Servidor de Polvo de Estrella (OnlineBandApp): guarda en memoria el estado de la sala global
+// Servidor de Polvo de Estrella: guarda en memoria el estado de la sala global
 // y lo sincroniza entre los navegadores con Socket.IO. No transmite audio.
 // Es la autoridad sobre la física de las gemas (30 pasos por segundo) y sobre la vida de cada
 // módulo: inactividad, disolución, límite de 3 por dispositivo y final de la obra.
@@ -157,6 +157,6 @@ setInterval(() => {
 }, PASO_MS);
 
 server.listen(PORT, () => {
-  console.log(`OnlineBandApp backend escuchando en el puerto ${PORT}`);
+  console.log(`Polvo de Estrella · backend escuchando en el puerto ${PORT}`);
   console.log(`Orígenes permitidos: ${ORIGENES.join(', ')}`);
 });

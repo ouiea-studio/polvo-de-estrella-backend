@@ -1,7 +1,7 @@
 {
-  "name": "onlineband-backend",
+  "name": "polvo-de-estrella-backend",
   "version": "1.0.0",
-  "description": "Servidor de estado compartido de OnlineBandApp",
+  "description": "Servidor de estado compartido de Polvo de Estrella",
   "main": "server.js",
   "scripts": {
     "test": "node prueba.js",
