@@ -62,9 +62,29 @@ const esperar = (s, evento) => new Promise((resolve) => s.once(evento, resolve))
   revisar(movido.ok && movido.x === 12, 'mover fuera del radio queda en 12');
   revisar((await movidoB).x === 12, 'B recibe la nueva posición');
 
+  // Espectador (?rol=espectador): recibe estado, eventos y reloj, pero no es tripulante ni puede actuar
+  const esp = await conectar();
+  const mira = await pedir(esp, 'mirar', {});
+  revisar(mira.ok && !mira.tu && mira.estado.instrumentos.some((i) => i.id === inst.id) && !!mira.estado.reloj,
+    'espectador: recibe el estado (con el reloj) sin indicativo');
+  revisar(!mira.estado.tripulantes.some((t) => t.id === esp.id), 'espectador: no aparece en la lista de tripulantes');
+  const saludC = await (await fetch(URL + '/api/health')).json();
+  revisar(saludC.tripulantes === inicial.tripulantes + 2 && saludC.espectadores >= 1, `espectador: no cuenta como tripulante (${saludC.tripulantes} tripulantes, ${saludC.espectadores} espectador/es)`);
+  revisar(!(await pedir(esp, 'instrumento:agregar', { tipo: 'melodia', x: 0, z: 0 })).ok, 'espectador: no puede crear módulos');
+  revisar(!(await pedir(esp, 'tempo:cambiar', { tempo: 100 })).ok && !(await pedir(esp, 'obra:final', {})).ok, 'espectador: no puede cambiar el tempo ni lanzar el final');
+  revisar(!(await pedir(esp, 'unirse', {})).ok, 'espectador: no puede volverse tripulante con la misma conexión');
+  const horaC = await pedir(esp, 'reloj:hora');
+  revisar(horaC.ok && Number.isFinite(horaC.t), 'espectador: recibe la hora del reloj compartido');
+  const tempoC = esperar(esp, 'tempo:cambiado');
+
   const tempoA = esperar(a, 'tempo:cambiado');
   revisar((await pedir(b, 'tempo:cambiar', { tempo: 128 })).ok, 'B cambia el tempo');
   revisar((await tempoA).tempo === 128, 'A recibe el tempo nuevo');
+  revisar((await tempoC).tempo === 128, 'espectador: recibe el tempo nuevo');
+  esp.disconnect();
+  await new Promise((r) => setTimeout(r, 150));
+  const saludFin = await (await fetch(URL + '/api/health')).json();
+  revisar(saludFin.espectadores === saludC.espectadores - 1 && saludFin.tripulantes === inicial.tripulantes + 2, 'espectador: al salir deja de contarse');
   revisar(!(await pedir(b, 'tempo:cambiar', { tempo: 999 })).ok, 'rechaza tempo 999');
 
   const escala = await pedir(b, 'escala:cambiar', { tonica: 'D', modo: 'dorico' });

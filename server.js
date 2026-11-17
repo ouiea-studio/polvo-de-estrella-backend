@@ -20,10 +20,16 @@ const opcionesCors = { origin: ORIGENES };
 const app = express();
 app.use(cors(opcionesCors));
 
+// Espectadores (?rol=espectador en el frontend, p. ej. la vista domo como fuente de video): reciben el
+// estado y todos los eventos, pero NO son tripulantes (no están en la lista, no tienen color ni
+// indicativo, no crean módulos). Solo se cuentan aquí para /api/health.
+const espectadores = new Set();
+
 app.get('/api/health', (req, res) => {
   res.json({
     ok: true,
     tripulantes: sala.estado.tripulantes.length,
+    espectadores: espectadores.size,
     instrumentos: sala.estado.instrumentos.length,
   });
 });
@@ -59,8 +65,19 @@ io.on('connection', (socket) => {
     responder(ack, { ok: true, t: sala.ahoraMs(), reloj: sala.estado.reloj });
   });
 
+  // Espectador: solo mira. Recibe la instantánea del estado (con el ancla del reloj compartido) y,
+  // como todos los sockets, los eventos que el servidor reparte con io.emit. Como no se agrega a los
+  // tripulantes, manejar() rechaza cualquier cambio que intente (crear, mover, tempo, final…).
+  socket.on('mirar', (datos, ack) => {
+    if (typeof datos === 'function') ack = datos;
+    if (sala.buscarTripulante(socket.id)) return responder(ack, { ok: false, error: 'Ya eres tripulante' });
+    espectadores.add(socket.id);
+    responder(ack, { ok: true, estado: sala.instantanea() });
+  });
+
   socket.on('unirse', (datos, ack) => {
     if (typeof datos === 'function') ack = datos;
+    if (espectadores.has(socket.id)) return responder(ack, { ok: false, error: 'Un espectador no puede ser tripulante' });
     let tripulante = sala.buscarTripulante(socket.id);
     if (!tripulante) {
       tripulante = sala.agregarTripulante(socket.id);
@@ -142,6 +159,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    espectadores.delete(socket.id);
     const salida = sala.quitarTripulante(socket.id);
     if (salida) io.emit('tripulante:salio', salida);
   });
